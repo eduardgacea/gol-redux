@@ -16,6 +16,9 @@ function generateBoard(size) {
       const cellElement = document.createElement('div');
       cellElement.id = `cell-${i}-${j}`;
       cellElement.classList.add('cell');
+      cellElement.addEventListener('click', () => {
+        cellClickHandler(i, j);
+      });
       rowElement.append(cellElement);
     }
     boardElement.append(rowElement);
@@ -38,6 +41,35 @@ function renderBoard() {
   }
 }
 
+function cellClickHandler(i, j) {
+  board[i][j].alive = board[i][j].alive ? false : true;
+  for (let di = -1; di <= 1; di++) {
+    for (let dj = -1; dj <= 1; dj++) {
+      if ((di !== 0 || dj !== 0) && board[i + di]) {
+        if (board[i + di][j + dj]) {
+          if (board[i][j].alive) board[i + di][j + dj].liveNeighbourCount++;
+          else board[i + di][j + dj].liveNeighbourCount--;
+        }
+      }
+    }
+  }
+  renderBoard();
+}
+
+function getLiveNeighbourCount(i, j) {
+  let liveNeighbourCount = 0;
+  for (let di = -1; di <= 1; di++) {
+    for (let dj = -1; dj <= 1; dj++) {
+      if ((di !== 0 || dj !== 0) && board[i + di]) {
+        if (board[i + di][j + dj]) {
+          liveNeighbourCount += board[i + di][j + dj].alive ? 1 : 0;
+        }
+      }
+    }
+  }
+  return liveNeighbourCount;
+}
+
 form.addEventListener('submit', e => {
   e.preventDefault();
   if (document.getElementById('board')) document.getElementById('board').remove();
@@ -50,6 +82,7 @@ form.addEventListener('submit', e => {
         i,
         j,
         alive: false,
+        liveNeighbourCount: 0,
       });
     }
     board.push(row);
