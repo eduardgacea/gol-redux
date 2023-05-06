@@ -5,24 +5,13 @@ const form = document.getElementById('form');
 const run = document.getElementById('run');
 const simSpeed = document.getElementById('sim-speed');
 
-const DEFAULT_SPEED = 500;
+const DEFAULT_SIMULATION_SPEED = 500;
 
 let board = [];
 let isRunning = false;
 let simulationIntervalId;
 let speed;
 let generation = 0;
-
-run.addEventListener('click', () => {
-  toggleSimulation();
-});
-
-simSpeed.addEventListener('input', () => {
-  toggleSimulation();
-  speed = simSpeed.value;
-  document.getElementById('sim-speed-display').textContent = speed;
-  toggleSimulation();
-});
 
 function startSimulation() {
   if (!isRunning) {
@@ -45,11 +34,6 @@ function stopSimulation() {
     clearInterval(simulationIntervalId);
     isRunning = false;
   }
-}
-
-function toggleSimulation() {
-  if (isRunning) stopSimulation();
-  else startSimulation();
 }
 
 function generateBoard(size) {
@@ -152,8 +136,8 @@ function generateNextBoard() {
 form.addEventListener('submit', e => {
   e.preventDefault();
   stopSimulation();
-  simSpeed.value = DEFAULT_SPEED;
-  document.getElementById('sim-speed-display').textContent = DEFAULT_SPEED;
+  simSpeed.value = DEFAULT_SIMULATION_SPEED;
+  document.getElementById('sim-speed-display').textContent = DEFAULT_SIMULATION_SPEED;
   generation = 0;
   document.getElementById('generation').textContent = generation;
   if (document.getElementById('board')) document.getElementById('board').remove();
@@ -173,4 +157,18 @@ form.addEventListener('submit', e => {
   }
   generateBoard(boardSize);
   renderBoard();
+});
+
+run.addEventListener('click', () => {
+  if (isRunning) stopSimulation();
+  else startSimulation();
+});
+
+simSpeed.addEventListener('input', () => {
+  if (isRunning) {
+    stopSimulation();
+    speed = simSpeed.value;
+    document.getElementById('sim-speed-display').textContent = speed;
+    startSimulation();
+  }
 });
