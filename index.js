@@ -15,22 +15,25 @@ let generation = 0;
 
 run.addEventListener('click', () => {
   toggleSimulation();
-  run.textContent = isRunning ? 'STOP' : 'RUN';
 });
 
 simSpeed.addEventListener('input', () => {
   toggleSimulation();
   speed = simSpeed.value;
+  document.getElementById('sim-speed-display').textContent = speed;
   toggleSimulation();
 });
 
 function startSimulation() {
-  speed = simSpeed.value;
   if (!isRunning) {
+    run.textContent = 'STOP';
+    speed = simSpeed.value;
     simulationIntervalId = setInterval(() => {
       const nextBoard = generateNextBoard();
       board = JSON.parse(JSON.stringify(nextBoard));
       renderBoard();
+      generation++;
+      document.getElementById('generation').textContent = generation;
     }, speed);
     isRunning = true;
   }
@@ -38,6 +41,7 @@ function startSimulation() {
 
 function stopSimulation() {
   if (isRunning) {
+    run.textContent = 'START';
     clearInterval(simulationIntervalId);
     isRunning = false;
   }
@@ -147,7 +151,11 @@ function generateNextBoard() {
 
 form.addEventListener('submit', e => {
   e.preventDefault();
+  stopSimulation();
   simSpeed.value = DEFAULT_SPEED;
+  document.getElementById('sim-speed-display').textContent = DEFAULT_SPEED;
+  generation = 0;
+  document.getElementById('generation').textContent = generation;
   if (document.getElementById('board')) document.getElementById('board').remove();
   board.splice(0, board.length);
   const boardSize = +document.getElementById('board-size').value;
