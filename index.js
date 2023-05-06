@@ -2,8 +2,51 @@
 
 const root = document.getElementById('root');
 const form = document.getElementById('form');
+const run = document.getElementById('run');
+const simSpeed = document.getElementById('sim-speed');
 
-const board = [];
+const DEFAULT_SPEED = 500;
+
+let board = [];
+let isRunning = false;
+let simulationIntervalId;
+let speed;
+let generation = 0;
+
+run.addEventListener('click', () => {
+  toggleSimulation();
+  run.textContent = isRunning ? 'STOP' : 'RUN';
+});
+
+simSpeed.addEventListener('input', () => {
+  toggleSimulation();
+  speed = simSpeed.value;
+  toggleSimulation();
+});
+
+function startSimulation() {
+  speed = simSpeed.value;
+  if (!isRunning) {
+    simulationIntervalId = setInterval(() => {
+      const nextBoard = generateNextBoard();
+      board = JSON.parse(JSON.stringify(nextBoard));
+      renderBoard();
+    }, speed);
+    isRunning = true;
+  }
+}
+
+function stopSimulation() {
+  if (isRunning) {
+    clearInterval(simulationIntervalId);
+    isRunning = false;
+  }
+}
+
+function toggleSimulation() {
+  if (isRunning) stopSimulation();
+  else startSimulation();
+}
 
 function generateBoard(size) {
   const boardElement = document.createElement('div');
@@ -56,7 +99,7 @@ function cellClickHandler(i, j) {
   renderBoard();
 }
 
-function getLiveNeighbourCount(i, j) {
+function getLiveNeighbourCount(i, j, board) {
   let liveNeighbourCount = 0;
   for (let di = -1; di <= 1; di++) {
     for (let dj = -1; dj <= 1; dj++) {
@@ -70,8 +113,41 @@ function getLiveNeighbourCount(i, j) {
   return liveNeighbourCount;
 }
 
+function generateNextBoard() {
+  // CREATING BLANK NEXT BOARD
+  const nextBoard = [];
+  for (let i = 0; i < board.length; i++) {
+    const nextBoardRow = [];
+    for (let j = 0; j < board.length; j++) {
+      const nextBoardCell = {
+        i,
+        j,
+        alive: board[i][j].alive,
+        liveNeighbourCount: 0,
+      };
+      nextBoardRow.push(nextBoardCell);
+      // APPLYING GAME RULES
+      if (board[i][j].alive) {
+        if (board[i][j].liveNeighbourCount < 2 || board[i][j].liveNeighbourCount > 3) nextBoardCell.alive = false;
+        else nextBoardCell.alive = true;
+      } else {
+        if (board[i][j].liveNeighbourCount === 3) nextBoardCell.alive = true;
+      }
+    }
+    nextBoard.push(nextBoardRow);
+  }
+  // POPULATING NEW BOARD WITH liveNeighbourCount VALUES
+  for (let i = 0; i < board.length; i++) {
+    for (let j = 0; j < board.length; j++) {
+      nextBoard[i][j].liveNeighbourCount = getLiveNeighbourCount(i, j, nextBoard);
+    }
+  }
+  return nextBoard;
+}
+
 form.addEventListener('submit', e => {
   e.preventDefault();
+  simSpeed.value = DEFAULT_SPEED;
   if (document.getElementById('board')) document.getElementById('board').remove();
   board.splice(0, board.length);
   const boardSize = +document.getElementById('board-size').value;
